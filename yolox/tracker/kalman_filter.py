@@ -70,7 +70,7 @@ class KalmanFilter(object):
 
         """
         mean_pos = measurement
-        mean_vel = np.zeros_like(mean_pos)
+        mean_vel = np.zeros_like(mean_pos)  # 第一轮的结果没用 因为v全是0
         mean = np.r_[mean_pos, mean_vel]
 
         std = [

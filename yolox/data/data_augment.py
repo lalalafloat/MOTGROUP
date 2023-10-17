@@ -187,28 +187,39 @@ def _mirror(image, boxes):
 
 
 def preproc(image, input_size, mean, std, swap=(2, 0, 1)):
-    if len(image.shape) == 3:
-        padded_img = np.ones((input_size[0], input_size[1], 3)) * 114.0
-    else:
-        padded_img = np.ones(input_size) * 114.0
-    img = np.array(image)
-    r = min(input_size[0] / img.shape[0], input_size[1] / img.shape[1])
-    resized_img = cv2.resize(
-        img,
-        (int(img.shape[1] * r), int(img.shape[0] * r)),
-        interpolation=cv2.INTER_LINEAR,
-    ).astype(np.float32)
-    padded_img[: int(img.shape[0] * r), : int(img.shape[1] * r)] = resized_img
+    img = np.array(image, dtype=float)
 
-    padded_img = padded_img[:, :, ::-1]
-    padded_img /= 255.0
-    if mean is not None:
-        padded_img -= mean
-    if std is not None:
-        padded_img /= std
-    padded_img = padded_img.transpose(swap)
-    padded_img = np.ascontiguousarray(padded_img, dtype=np.float32)
-    return padded_img, r
+    h0, w0 = img.shape[:2]
+
+    r = min(input_size[0] / img.shape[0], input_size[1] / img.shape[1])
+    if r != 1:
+        interp = cv2.INTER_AREA if r < 1 else cv2.INTER_LINEAR
+        img = cv2.resize(img, (int(w0 * r), int(h0 * r)), interpolation=interp)
+    img /= 255.0
+    img = img.transpose(swap)
+    return img, r
+    # if len(image.shape) == 3:
+    #     padded_img = np.ones((input_size[0], input_size[1], 3)) * 114.0
+    # else:
+    #     padded_img = np.ones(input_size) * 114.0
+    # img = np.array(image)
+    # r = min(input_size[0] / img.shape[0], input_size[1] / img.shape[1])
+    # resized_img = cv2.resize(
+    #     img,
+    #     (int(img.shape[1] * r), int(img.shape[0] * r)),
+    #     interpolation=cv2.INTER_LINEAR,
+    # ).astype(np.float32)
+    # padded_img[: int(img.shape[0] * r), : int(img.shape[1] * r)] = resized_img
+    #
+    # padded_img = padded_img[:, :, ::-1]
+    # padded_img /= 255.0
+    # if mean is not None:
+    #     padded_img -= mean
+    # if std is not None:
+    #     padded_img /= std
+    # padded_img = padded_img.transpose(swap)
+    # padded_img = np.ascontiguousarray(padded_img, dtype=np.float32)
+    # return padded_img, r
 
 
 class TrainTransform:
